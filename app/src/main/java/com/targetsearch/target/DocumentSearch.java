@@ -62,15 +62,20 @@ public class DocumentSearch {
         long startTime = System.currentTimeMillis();
         switch (searchMethod) {
             case 1: //String Match
-                searchCount = SearchUtils.simpleStringMatch(searchTerm, frenchArmedForcesFile);
+                searchCount = SearchUtils.simpleStringSearch(searchTerm, frenchArmedForcesFile);
                 unsortedResultMap.put(frenchArmedForcesName, searchCount);
-                searchCount = SearchUtils.simpleStringMatch(searchTerm, hitchHikersFile);
+                searchCount = SearchUtils.simpleStringSearch(searchTerm, hitchHikersFile);
                 unsortedResultMap.put(hitchHikersName, searchCount);
-                searchCount = SearchUtils.simpleStringMatch(searchTerm, warpDriveFile);
+                searchCount = SearchUtils.simpleStringSearch(searchTerm, warpDriveFile);
                 unsortedResultMap.put(warpDriveName, searchCount);
                 break;
             case 2: //Regular Expression
-
+                searchCount = SearchUtils.regexSearch(searchTerm, frenchArmedForcesFile);
+                unsortedResultMap.put(frenchArmedForcesName, searchCount);
+                searchCount = SearchUtils.regexSearch(searchTerm, hitchHikersFile);
+                unsortedResultMap.put(hitchHikersName, searchCount);
+                searchCount = SearchUtils.regexSearch(searchTerm, warpDriveFile);
+                unsortedResultMap.put(warpDriveName, searchCount);
                 break;
             case 3: //Indexed
                 break;
