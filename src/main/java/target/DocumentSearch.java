@@ -10,6 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+/**
+ * This application will take user inputs for search term and search method and output
+ * the number of occurrences/matches of the search term relative to each text file found in path:
+ * ~/target/src/main/java/res/sample_text .
+ */
 public class DocumentSearch {
     private static final String resPath = System.getProperty("user.dir") + File.separator +
             "src" + File.separator +
@@ -23,7 +28,9 @@ public class DocumentSearch {
         int searchMethod = -1, searchCount = 0;
         Scanner inputScanner = new Scanner(System.in);
 
-        //Search term cannot be null. Search method input needs to be 1, 2, or 3
+        /*  Search term cannot be null. Search method input needs to be 1, 2, or 3.
+            Loops until user provides satisfying inputs.
+         */
         while(true) {
             System.out.println("Please enter search term or phrase (cannot be null).");
             searchTerm = inputScanner.nextLine();
@@ -32,13 +39,18 @@ public class DocumentSearch {
                 System.out.println("Please choose search method (input corresponding number): 1. String Match, 2. Regular Expression, 3. Indexed");
                 searchMethod = Integer.valueOf(inputScanner.nextLine());
             } catch (NumberFormatException nfe) {
-                System.err.println("Please input corresponding number for search method: 1, 2, or 3");
+                searchMethod = -1;
             }
 
             if (searchTerm != null && !searchTerm.isEmpty() && (searchMethod > 0 && searchMethod <= 3)) {
                 break;
+            } else {
+                System.out.println("Invalid input(s). Please type \"q\" to quit application or press enter to continue.");
+                if (inputScanner.nextLine().equals("q")) {
+                    return;
+                }
             }
-        }
+        }// end while
 
         System.out.println("SearchTerm is: " + searchTerm + "\n");
 
@@ -77,7 +89,7 @@ public class DocumentSearch {
                     break;
                 default:
                     System.err.println("Unexpected behavior for search method input: " + searchMethod);
-            }
+            }// end switch
             long endTime = System.currentTimeMillis();
 
             System.out.println("Search results: \n");
