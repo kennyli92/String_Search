@@ -1,4 +1,4 @@
-package com.targetsearch.target;
+package target;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,9 +16,8 @@ public final class SearchUtils {
     private static String readFile(File searchFile) {
         String fileStr = "";
         String errMsg = "";
-        try {
+        try (BufferedReader br = new BufferedReader(new FileReader(searchFile))) {
             String lineStr;
-            BufferedReader br = new BufferedReader(new FileReader(searchFile));
             while ((lineStr = br.readLine()) != null) {
                 fileStr += " " + lineStr;
             }
@@ -26,10 +25,13 @@ public final class SearchUtils {
             fileStr = fileStr.toLowerCase();
         } catch (FileNotFoundException fnfe) {
             errMsg += "File not found or read was interrupted: " + searchFile.getPath();
-            errMsg += "\n" + fnfe.getMessage();
+            fnfe.printStackTrace();
         } catch (IOException ioe) {
             errMsg += "I/O operation was interrupted.";
-            errMsg += "\n" + ioe.getMessage();
+            ioe.printStackTrace();
+        } catch (Exception e) {
+            errMsg += "Unexpected exception.";
+            e.printStackTrace();
         } finally {
             System.err.println(errMsg);
         }

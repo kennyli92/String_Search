@@ -1,4 +1,4 @@
-package com.targetsearch.target;
+package target;
 
 import java.io.File;
 import java.util.Collections;
@@ -11,11 +11,10 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class DocumentSearch {
-    private static final String resPath =
-            System.getProperty("user.dir") + File.separator +
-            "app" + File.separator +
+    private static final String resPath = System.getProperty("user.dir") + File.separator +
             "src" + File.separator +
             "main" + File.separator +
+            "java" + File.separator +
             "res" + File.separator +
             "sample_text" + File.separator;
 
