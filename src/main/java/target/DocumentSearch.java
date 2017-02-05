@@ -16,14 +16,11 @@ public class DocumentSearch {
             "main" + File.separator +
             "java" + File.separator +
             "res" + File.separator +
-            "sample_text" + File.separator;
+            "sample_text";
 
     public static void main(String[] args) {
         String searchTerm;
         int searchMethod = -1, searchCount = 0;
-        final String frenchArmedForcesName = "french_armed_forces.txt";
-        final String hitchHikersName = "hitchhikers.txt";
-        final String warpDriveName = "warp_drive.txt";
         Scanner inputScanner = new Scanner(System.in);
 
         //Search term cannot be null. Search method input needs to be 1, 2, or 3
@@ -45,51 +42,60 @@ public class DocumentSearch {
 
         System.out.println("SearchTerm is: " + searchTerm + "\n");
 
-        //Create new file instances for the 3 txt files
-        File frenchArmedForcesFile = new File(resPath + frenchArmedForcesName);
-        File hitchHikersFile = new File(resPath + hitchHikersName);
-        File warpDriveFile = new File(resPath + warpDriveName);
+        //Create new file instances
+        File[] files = new File(resPath).listFiles();
+        if (files == null || files.length == 0) {
+            System.err.println("Empty resource directory. Please add appropriate text files to: " + resPath);
+        } else {
+            //Stores number of matches per file
+            Map<String, Integer> unsortedResultMap = new HashMap<>();
 
-        //Stores number of matches per file
-        Map<String, Integer> unsortedResultMap = new HashMap<>();
+            //preprocess file content into indexable if search method is Indexed (3)
+            if (searchMethod == 3) {
+                System.out.println("Need to implement");
+            }
 
-        //preprocess file content into indexable if search method is Indexed (3)
-        if (searchMethod == 3) {
-            System.out.println("Need to implement");
+            long startTime = System.currentTimeMillis();
+            switch (searchMethod) {
+                case 1: //String Match
+                    for (File file : files) {
+                        if (file.isFile()) {
+                            searchCount = SearchUtils.simpleStringSearch(searchTerm, file);
+                            unsortedResultMap.put(file.getName(), searchCount);
+                        }
+                    }
+                    break;
+                case 2: //Regular Expression
+                    for (File file : files) {
+                        if (file.isFile()) {
+                            searchCount = SearchUtils.regexSearch(searchTerm, file);
+                            unsortedResultMap.put(file.getName(), searchCount);
+                        }
+                    }
+                    break;
+                case 3: //Indexed
+                    break;
+                default:
+                    System.err.println("Unexpected behavior for search method input: " + searchMethod);
+            }
+            long endTime = System.currentTimeMillis();
+
+            System.out.println("Search results: \n");
+
+            if (unsortedResultMap.size() == 0) {
+                System.err.println("Found no text files. Please add appropriate text files to: " + resPath);
+            } else {
+                Map<String, Integer> sortedResultMap = sortDescByValue(unsortedResultMap);
+                for (Map.Entry<String, Integer> entry : sortedResultMap.entrySet()) {
+                    System.out.println("\t" + entry.getValue() + " - " + entry.getKey() + " matches\n");
+                }
+            }
+
+            System.out.println("Elapsed Time: " + (endTime - startTime) + " ms");
         }
 
-        long startTime = System.currentTimeMillis();
-        switch (searchMethod) {
-            case 1: //String Match
-                searchCount = SearchUtils.simpleStringSearch(searchTerm, frenchArmedForcesFile);
-                unsortedResultMap.put(frenchArmedForcesName, searchCount);
-                searchCount = SearchUtils.simpleStringSearch(searchTerm, hitchHikersFile);
-                unsortedResultMap.put(hitchHikersName, searchCount);
-                searchCount = SearchUtils.simpleStringSearch(searchTerm, warpDriveFile);
-                unsortedResultMap.put(warpDriveName, searchCount);
-                break;
-            case 2: //Regular Expression
-                searchCount = SearchUtils.regexSearch(searchTerm, frenchArmedForcesFile);
-                unsortedResultMap.put(frenchArmedForcesName, searchCount);
-                searchCount = SearchUtils.regexSearch(searchTerm, hitchHikersFile);
-                unsortedResultMap.put(hitchHikersName, searchCount);
-                searchCount = SearchUtils.regexSearch(searchTerm, warpDriveFile);
-                unsortedResultMap.put(warpDriveName, searchCount);
-                break;
-            case 3: //Indexed
-                break;
-            default:
-                System.err.println("Unexpected behavior for search method input: " + searchMethod);
-        }
-        long endTime = System.currentTimeMillis();
-
-        System.out.println("Search results: \n");
-        Map<String, Integer> sortedResultMap = sortDescByValue(unsortedResultMap);
-        for (Map.Entry<String, Integer> entry : sortedResultMap.entrySet()) {
-            System.out.println("\t" + entry.getValue() + " - " + entry.getKey() + " matches\n");
-        }
-
-        System.out.println("Elapsed Time: " + (endTime - startTime) + " ms");
+        //clean up
+        inputScanner.close();
     }
 
     private static Map<String, Integer> sortDescByValue(Map<String, Integer> unsortedMap) {
