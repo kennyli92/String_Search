@@ -1,6 +1,8 @@
 package target;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -31,7 +33,8 @@ public class DocumentSearch {
 
     public static void main(String[] args) {
         String searchTerm;
-        int searchMethod;
+        int searchMethod = 0;
+        boolean quit = false;
         Scanner inputScanner = new Scanner(System.in);
 
         while(true) {
@@ -39,8 +42,13 @@ public class DocumentSearch {
             Loops until user provides satisfying inputs.
          */
             while (true) {
-                System.out.println("Please enter search term or phrase (cannot be null).");
+                System.out.println("Please enter search term or phrase (cannot be null) or \"q\" to quit.");
                 searchTerm = inputScanner.nextLine();
+
+                if (searchTerm.equalsIgnoreCase("q")) {
+                    quit = true;
+                    break;
+                }
 
                 try {
                     System.out.println("Please choose search method (input corresponding number): 1. String Match, 2. Regular Expression, 3. Indexed");
@@ -49,7 +57,7 @@ public class DocumentSearch {
                     searchMethod = -1;
                 }
 
-                if (searchTerm != null && !searchTerm.isEmpty() && (searchMethod > 0 && searchMethod <= 3)) {
+                if (!searchTerm.isEmpty() && (searchMethod > 0 && searchMethod <= 3)) {
                     break;
                 } else {
                     System.out.println("Invalid input(s). Please type \"q\" to quit application or press enter to continue.");
@@ -59,12 +67,23 @@ public class DocumentSearch {
                 }
             }// end while
 
+            if (quit)
+                break;
+
             //Stores number of matches per file
             Map<String, Integer> sortedResultMap = null;
 
             //preprocess file content into indexable if search method is Indexed (3)
+            boolean indexed = true;
+            List<String> indexedFiles = null;
             if (searchMethod == 3) {
-                System.out.println("Need to implement");
+                try {
+                    indexedFiles = SearchUtils.indexFilesInDir(indexDirPath, resPath);
+                } catch (IOException ioe){
+                    indexed = false;
+                    ioe.printStackTrace();
+                    System.err.println("Error indexing files in: " + resPath);
+                }
             }
 
             //search starts here
@@ -77,6 +96,9 @@ public class DocumentSearch {
                     sortedResultMap = SearchUtils.regexSearch(searchTerm, resPath);
                     break;
                 case 3: //Indexed
+                    if (indexed && indexedFiles != null && indexedFiles.size() > 0) {
+                        sortedResultMap = SearchUtils.indexSearch(searchTerm, indexedFiles, indexDirPath);
+                    }
                     break;
                 default:
                     System.err.println("Unexpected behavior for search method input: " + searchMethod);
@@ -90,16 +112,11 @@ public class DocumentSearch {
                 System.err.println("Found no text files. Please add appropriate text files to: " + resPath);
             } else if (sortedResultMap != null) {
                 for (Map.Entry<String, Integer> entry : sortedResultMap.entrySet()) {
-                    System.out.println("\t" + entry.getValue() + " - " + entry.getKey() + " matches\n");
+                    System.out.println("\t" + entry.getKey() + " - " + entry.getValue() + " matches\n");
                 }
             }
 
             System.out.println("Elapsed Time: " + (endTime - startTime) + " ms");
-            System.out.println("Press enter to continue or \"q\" to quit.");
-            searchTerm = inputScanner.nextLine();
-            if (searchTerm.equalsIgnoreCase("q")) {
-                break;
-            }
         }
 
         //clean up
