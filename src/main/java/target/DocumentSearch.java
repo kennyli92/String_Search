@@ -1,19 +1,13 @@
 package target;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 /**
  * This application will take user inputs for search term and search method and output
- * the number of occurrences/matches of the search term relative to each text file found in path:
- * ~/target/src/main/java/res/sample_text .
+ * the number of exact occurrences/matches of the search term relative to each text file
+ * found in path: ~/target/src/main/java/res/sample_text .
  */
 public class DocumentSearch {
     private static final String resPath = System.getProperty("user.dir") + File.separator +
@@ -25,42 +19,36 @@ public class DocumentSearch {
 
     public static void main(String[] args) {
         String searchTerm;
-        int searchMethod = -1, searchCount = 0;
+        int searchMethod;
         Scanner inputScanner = new Scanner(System.in);
 
+        while(true) {
         /*  Search term cannot be null. Search method input needs to be 1, 2, or 3.
             Loops until user provides satisfying inputs.
          */
-        while(true) {
-            System.out.println("Please enter search term or phrase (cannot be null).");
-            searchTerm = inputScanner.nextLine();
+            while (true) {
+                System.out.println("Please enter search term or phrase (cannot be null).");
+                searchTerm = inputScanner.nextLine();
 
-            try {
-                System.out.println("Please choose search method (input corresponding number): 1. String Match, 2. Regular Expression, 3. Indexed");
-                searchMethod = Integer.valueOf(inputScanner.nextLine());
-            } catch (NumberFormatException nfe) {
-                searchMethod = -1;
-            }
-
-            if (searchTerm != null && !searchTerm.isEmpty() && (searchMethod > 0 && searchMethod <= 3)) {
-                break;
-            } else {
-                System.out.println("Invalid input(s). Please type \"q\" to quit application or press enter to continue.");
-                if (inputScanner.nextLine().equals("q")) {
-                    return;
+                try {
+                    System.out.println("Please choose search method (input corresponding number): 1. String Match, 2. Regular Expression, 3. Indexed");
+                    searchMethod = Integer.valueOf(inputScanner.nextLine());
+                } catch (NumberFormatException nfe) {
+                    searchMethod = -1;
                 }
-            }
-        }// end while
 
-        System.out.println("SearchTerm is: " + searchTerm + "\n");
+                if (searchTerm != null && !searchTerm.isEmpty() && (searchMethod > 0 && searchMethod <= 3)) {
+                    break;
+                } else {
+                    System.out.println("Invalid input(s). Please type \"q\" to quit application or press enter to continue.");
+                    if (inputScanner.nextLine().equalsIgnoreCase("q")) {
+                        return;
+                    }
+                }
+            }// end while
 
-        //Create new file instances
-        File[] files = new File(resPath).listFiles();
-        if (files == null || files.length == 0) {
-            System.err.println("Empty resource directory. Please add appropriate text files to: " + resPath);
-        } else {
             //Stores number of matches per file
-            Map<String, Integer> unsortedResultMap = new HashMap<>();
+            Map<String, Integer> sortedResultMap = null;
 
             //preprocess file content into indexable if search method is Indexed (3)
             if (searchMethod == 3) {
@@ -70,20 +58,10 @@ public class DocumentSearch {
             long startTime = System.currentTimeMillis();
             switch (searchMethod) {
                 case 1: //String Match
-                    for (File file : files) {
-                        if (file.isFile()) {
-                            searchCount = SearchUtils.simpleStringSearch(searchTerm, file);
-                            unsortedResultMap.put(file.getName(), searchCount);
-                        }
-                    }
+                    sortedResultMap = SearchUtils.simpleStringSearch(searchTerm, resPath);
                     break;
                 case 2: //Regular Expression
-                    for (File file : files) {
-                        if (file.isFile()) {
-                            searchCount = SearchUtils.regexSearch(searchTerm, file);
-                            unsortedResultMap.put(file.getName(), searchCount);
-                        }
-                    }
+                    sortedResultMap = SearchUtils.regexSearch(searchTerm, resPath);
                     break;
                 case 3: //Indexed
                     break;
@@ -94,36 +72,23 @@ public class DocumentSearch {
 
             System.out.println("Search results: \n");
 
-            if (unsortedResultMap.size() == 0) {
+            if (sortedResultMap != null && sortedResultMap.size() == 0) {
                 System.err.println("Found no text files. Please add appropriate text files to: " + resPath);
-            } else {
-                Map<String, Integer> sortedResultMap = sortDescByValue(unsortedResultMap);
+            } else if (sortedResultMap != null) {
                 for (Map.Entry<String, Integer> entry : sortedResultMap.entrySet()) {
                     System.out.println("\t" + entry.getValue() + " - " + entry.getKey() + " matches\n");
                 }
             }
 
             System.out.println("Elapsed Time: " + (endTime - startTime) + " ms");
+            System.out.println("Press enter to continue or \"q\" to quit.");
+            searchTerm = inputScanner.nextLine();
+            if (searchTerm.equalsIgnoreCase("q")) {
+                break;
+            }
         }
 
         //clean up
         inputScanner.close();
-    }
-
-    private static Map<String, Integer> sortDescByValue(Map<String, Integer> unsortedMap) {
-        List<Map.Entry<String, Integer>> list = new LinkedList<>(unsortedMap.entrySet());
-
-        Collections.sort(list, new Comparator<Map.Entry<String, Integer>>() {
-            public int compare(Map.Entry<String, Integer> obj1, Map.Entry<String, Integer> obj2) {
-                return obj2.getValue() - obj1.getValue();
-            }
-        });
-
-        Map<String, Integer> sortedHashMap = new LinkedHashMap<>();
-        for (Map.Entry<String, Integer> entry : list) {
-            sortedHashMap.put(entry.getKey(), entry.getValue());
-        }
-
-        return sortedHashMap;
     }
 }
