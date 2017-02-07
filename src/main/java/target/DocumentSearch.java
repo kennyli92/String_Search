@@ -10,12 +10,24 @@ import java.util.Scanner;
  * found in path: ~/target/src/main/java/res/sample_text .
  */
 public class DocumentSearch {
+    /**
+     * relative path containing the text files
+     */
     private static final String resPath = System.getProperty("user.dir") + File.separator +
             "src" + File.separator +
             "main" + File.separator +
             "java" + File.separator +
             "res" + File.separator +
             "sample_text";
+    /**
+     * relative path containing the index created for each text file found in {@code resPath}
+     */
+    private static final String indexDirPath = System.getProperty("user.dir") + File.separator +
+            "src" + File.separator +
+            "main" + File.separator +
+            "java" + File.separator +
+            "res" + File.separator +
+            "index";
 
     public static void main(String[] args) {
         String searchTerm;
@@ -55,6 +67,7 @@ public class DocumentSearch {
                 System.out.println("Need to implement");
             }
 
+            //search starts here
             long startTime = System.currentTimeMillis();
             switch (searchMethod) {
                 case 1: //String Match
@@ -72,6 +85,7 @@ public class DocumentSearch {
 
             System.out.println("Search results: \n");
 
+            //prints out text file name and corresponding search count ordered relevancy
             if (sortedResultMap != null && sortedResultMap.size() == 0) {
                 System.err.println("Found no text files. Please add appropriate text files to: " + resPath);
             } else if (sortedResultMap != null) {
