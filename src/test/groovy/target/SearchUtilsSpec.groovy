@@ -1,5 +1,7 @@
 package target
 
+import org.apache.commons.lang3.RandomStringUtils
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -23,14 +25,83 @@ class SearchUtilsSpec extends Specification {
             "res" + File.separator +
             "index";
 
+    private static final int searchTermSize = 2000000
+
+    @Shared
+    List<String> indexedFiles;
+
+    @Shared
+    String[] searchTerms;
+
     def setupSpec() {
         //sets up index
-        SearchUtils.indexFilesInDir(indexDirPath, resPath)
+        indexedFiles = SearchUtils.indexFilesInDir(indexDirPath, resPath)
+
+        //generates 2 million random search term for performance testing
+        Random random = new Random();
+        searchTerms = new String[searchTermSize]
+        for (int idx = 0; idx < searchTermSize; idx++) {
+            searchTerms[idx] = RandomStringUtils.randomAlphanumeric(random.nextInt(15) + 1)
+        }
+    }
+
+    @Unroll
+    def "simpleStringSearch - Search #searchTerm"() {
+        when:
+        Map<String, Integer> resultMap = SearchUtils.simpleStringSearch(searchTerm, resPath)
+
+        then:
+        resultMap.get("testSearch.txt") == searchCount
+
+        where:
+        searchTerm                          | searchCount
+        'testing'                           | 4
+        'testing the app like'              | 4
+        'testing the app like heck'         | 3
+        'testing the app like heck 1 23'    | 1
+        'p unct at ion'                     | 1
+        ''                                  | null
+    }
+
+    @Unroll
+    def "regexSearch - Search #searchTerm"() {
+        when:
+        Map<String, Integer> resultMap = SearchUtils.regexSearch(searchTerm, resPath)
+
+        then:
+        resultMap.get("testSearch.txt") == searchCount
+
+        where:
+        searchTerm                          | searchCount
+        'testing'                           | 4
+        'testing the app like'              | 4
+        'testing the app like heck'         | 3
+        'testing the app like heck 1 23'    | 1
+        'p unct at ion'                     | 1
+        ''                                  | null
+    }
+
+    @Unroll
+    def "indexSearch - Search #searchTerm"() {
+        when:
+        Map<String, Integer> resultMap = SearchUtils.indexSearch(searchTerm, indexedFiles, indexDirPath)
+
+        then:
+        resultMap.get("testSearch.txt") == searchCount
+
+        where:
+        searchTerm                          | searchCount
+        'testing'                           | 4
+        'testing the app like'              | 4
+        'testing the app like heck'         | 3
+        'testing the app like heck 1 23'    | 1
+        'p unct at ion'                     | 1
+        ''                                  | null
     }
 
     def 'readFile'() {
         given:
-        File file = new File(resPath + File.separator + "test.txt")
+        File file = new File(resPath + File.separator + "simpleTest.txt")
 
         when:
         String result = SearchUtils.readFile(file)
@@ -87,5 +158,39 @@ class SearchUtilsSpec extends Specification {
 
         then:
         result == 2
+    }
+
+    /*** Performance Tests ***/
+    def "simpleStringSearch - performance test - search #searchTermSize random terms"() {
+        expect:
+        long startTime = System.currentTimeMillis();
+        for (int idx = 0; idx < searchTermSize; idx++) {
+            SearchUtils.simpleStringSearch(searchTerms[idx], resPath)
+        }
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("String Match Elapsed Time: " + (endTime - startTime) + " ms");
+    }
+
+    def "regexSearch - performance test - search #searchTermSize random terms"() {
+        expect:
+        long startTime = System.currentTimeMillis();
+        for (int idx = 0; idx < searchTermSize; idx++) {
+            SearchUtils.regexSearch(searchTerms[idx], resPath)
+        }
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("Regex Search Elapsed Time: " + (endTime - startTime) + " ms");
+    }
+
+    def "indexSearch - performance test - search #searchTermSize random terms"() {
+        expect:
+        long startTime = System.currentTimeMillis();
+        for (int idx = 0; idx < searchTermSize; idx++) {
+            SearchUtils.indexSearch(searchTerms[idx], indexedFiles, indexDirPath)
+        }
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("Index Search Elapsed Time: " + (endTime - startTime) + " ms");
     }
 }

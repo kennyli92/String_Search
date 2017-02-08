@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'groovy'
+apply plugin: 'application'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -13,9 +14,23 @@ dependencies {
     compile 'org.apache.lucene:lucene-core:6.4.0'
     compile 'org.apache.lucene:lucene-queryparser:6.4.0'
     compile 'org.apache.lucene:lucene-analyzers-common:6.4.0'
+    compile 'org.apache.commons:commons-lang3:3.5'
     testCompile(
+            'org.spockframework:spock-core:1.0-groovy-2.4',
             'junit:junit:4.12',
-            'org.codehaus.groovy:groovy-all:2.4.0',
-            'org.spockframework:spock-core:1.0-groovy-2.4'
+            'org.codehaus.groovy:groovy-all:2.4.0'
     )
+}
+
+mainClassName = "target.DocumentSearch"
+
+run {
+    standardInput = System.in
+}
+
+test {
+    testLogging {
+        events "PASSED", "STARTED", "FAILED", "SKIPPED"
+    }
+    testLogging.showStandardStreams = true
 }
