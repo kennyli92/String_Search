@@ -159,38 +159,4 @@ class SearchUtilsSpec extends Specification {
         then:
         result == 2
     }
-
-    /*** Performance Tests ***/
-    def "simpleStringSearch - performance test - search #searchTermSize random terms"() {
-        expect:
-        long startTime = System.currentTimeMillis();
-        for (int idx = 0; idx < searchTermSize; idx++) {
-            SearchUtils.simpleStringSearch(searchTerms[idx], resPath)
-        }
-        long endTime = System.currentTimeMillis();
-
-        System.out.println("String Match Elapsed Time: " + (endTime - startTime) + " ms");
-    }
-
-    def "regexSearch - performance test - search #searchTermSize random terms"() {
-        expect:
-        long startTime = System.currentTimeMillis();
-        for (int idx = 0; idx < searchTermSize; idx++) {
-            SearchUtils.regexSearch(searchTerms[idx], resPath)
-        }
-        long endTime = System.currentTimeMillis();
-
-        System.out.println("Regex Search Elapsed Time: " + (endTime - startTime) + " ms");
-    }
-
-    def "indexSearch - performance test - search #searchTermSize random terms"() {
-        expect:
-        long startTime = System.currentTimeMillis();
-        for (int idx = 0; idx < searchTermSize; idx++) {
-            SearchUtils.indexSearch(searchTerms[idx], indexedFiles, indexDirPath)
-        }
-        long endTime = System.currentTimeMillis();
-
-        System.out.println("Index Search Elapsed Time: " + (endTime - startTime) + " ms");
-    }
 }
