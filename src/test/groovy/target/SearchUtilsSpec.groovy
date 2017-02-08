@@ -1,6 +1,5 @@
 package target
 
-import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -25,24 +24,12 @@ class SearchUtilsSpec extends Specification {
             "res" + File.separator +
             "index";
 
-    private static final int searchTermSize = 2000000
-
     @Shared
     List<String> indexedFiles;
-
-    @Shared
-    String[] searchTerms;
 
     def setupSpec() {
         //sets up index
         indexedFiles = SearchUtils.indexFilesInDir(indexDirPath, resPath)
-
-        //generates 2 million random search term for performance testing
-        Random random = new Random();
-        searchTerms = new String[searchTermSize]
-        for (int idx = 0; idx < searchTermSize; idx++) {
-            searchTerms[idx] = RandomStringUtils.randomAlphanumeric(random.nextInt(15) + 1)
-        }
     }
 
     @Unroll
